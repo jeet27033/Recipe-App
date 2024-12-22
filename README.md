@@ -10,8 +10,8 @@
 
 5 . npm install immutable
 
-6. npm install @reduxjs/toolkit@latest
+6 . npm install @reduxjs/toolkit@latest
 
-7. npm install redux@latest
+7 . npm install redux@latest
 
-8. npm install react-redux
+8 . npm install react-redux
