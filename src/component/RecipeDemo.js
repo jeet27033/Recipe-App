@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { isEmpty } from "lodash";
 import { OrbitProgress } from "react-loading-indicators";
-import { Div, Container, Title, Input, LoaderContainer, Message, List, ListItem, Button } from "./Style";
+import { Div, Container, Title, Input, LoaderContainer, Message, List, ListItem } from "./Style";
 import { useNavigate } from "react-router-dom";
 
 export const RecipeDemo = () => {
@@ -44,15 +44,10 @@ export const RecipeDemo = () => {
         );
     };
 
-    const CheckPerformance = () =>{
-        navigate('/Performance');
-    }
-
     return (
         <Div>
             <Container>
                 <Title>Recipe Demo</Title>
-                <Button onClick={()=>CheckPerformance}>Performance</Button>
                 <Input
                     type="text"
                     placeholder="Search for a recipe..."
