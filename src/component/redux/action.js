@@ -1,8 +1,8 @@
 import { FETCH_DATA_FAILURE, FETCH_DATA_REQUEST, FETCH_DATA_SUCCESS, FETCH_DETAIL_REQUEST, FETCH_DETAIL_SUCCESS, FETCH_DETAIL_FAILURE } from "./constant";
 
-
-export const FetchDataRequest = () => ({
-    type: FETCH_DATA_REQUEST
+export const FetchDataRequest = (recipe) => ({
+    type: FETCH_DATA_REQUEST,
+    payload: recipe
 });
 
 export const FetchDataSuccess = (data) => ({
@@ -15,9 +15,9 @@ export const FetchDataFailure = (error) => ({
     payload: error
 });
 
-
-export const FetchDetailRequest = () => ({
-    type: FETCH_DETAIL_REQUEST
+export const FetchDetailRequest = (data) => ({
+    type: FETCH_DETAIL_REQUEST,
+    payload: data
 });
 
 export const FetchDetailSuccess = (data) => ({

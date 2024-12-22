@@ -2,41 +2,26 @@ import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { isEmpty } from "lodash";
 import { OrbitProgress } from "react-loading-indicators";
-import { Div, Container, Title, Input, LoaderContainer, Message, List, ListItem } from "./Style";
+import { Div, Container, Title, Input, LoaderContainer, Message, List, ListItem,Button } from "./Style";
 import { useNavigate } from "react-router-dom";
-import { FetchDataFailure, FetchDataSuccess, FetchDataRequest } from "./redux/action";
-import { Api } from "./api/api";
+import { FetchDataRequest } from "./redux/action";
 
 export const RecipeDemo = () => {
-    const dispatch = useDispatch();
-    const { RecipeData: data, Loading: loading, Error: error } = useSelector((state) => state.toJS());
-    
     const [recipe, setRecipe] = useState("");
+    const dispatch = useDispatch();
+    const { RecipeData, Loading, Error } = useSelector((state) => state.toJS());
     const [typingTimeout, setTypingTimeout] = useState(null);
     const navigate = useNavigate();
 
-    const goToDetails = (mydata) => {
-        navigate('/details', { state: { data: mydata } });
-    };
-
     useEffect(() => {
-        if (!recipe) {
-            dispatch(FetchDataSuccess([])); 
-            return;
+        if (recipe) {
+            dispatch(FetchDataRequest(recipe));
         }
-
-        dispatch(FetchDataRequest());
-        fetch(Api(recipe))
-            .then((res) => res.json())
-            .then((mydata) => {
-                if (mydata.meals) {
-                    dispatch(FetchDataSuccess(mydata.meals));
-                } else {
-                    dispatch(FetchDataSuccess([]));
-                }
-            })
-            .catch((err) => dispatch(FetchDataFailure(err.message)));
-    }, [recipe, dispatch]);
+    },[recipe,dispatch])
+   
+    const handleRecipeClick = (data) => {
+        navigate("/details", { state: { data } });
+    };
 
     const handleInputChange = (event) => {
         const value = event.target.value.trim();
@@ -55,29 +40,31 @@ export const RecipeDemo = () => {
     return (
         <Div>
             <Container>
-                <Title>Recipe Demo</Title>
                 <Input
                     type="text"
+                    value={recipe}
+                    onChange={(e) => {
+                        setRecipe(e.target.value);
+                        handleInputChange(e);
+                    }}
                     placeholder="Search for a recipe..."
-                    onChange={handleInputChange}
-                    aria-label="Search for a recipe"
                 />
-
-                {loading && (
+                <br></br>
+                {Loading && (
                     <LoaderContainer>
                         <OrbitProgress variant="dotted" color="#32cd32" size="medium" />
                     </LoaderContainer>
                 )}
 
-                {error && <Message error>Error: {error}</Message>}
+                {Error && <Message error>Error: {Error}</Message>}
 
-                {isEmpty(data) && !loading && !error && recipe && (
+                {isEmpty(RecipeData) && !Loading && !Error && recipe && (
                     <Message>No results found for "{recipe}"</Message>
                 )}
                 
                 <List>
-                    {data && data.map((item) => (
-                        <ListItem key={item.idMeal} onClick={() => goToDetails(item.strMeal)}>
+                    {RecipeData && RecipeData.map((item) => (
+                        <ListItem key={item.idMeal} onClick={() => handleRecipeClick(item.strMeal)}>
                             {item.strMeal}
                         </ListItem>
                     ))}
