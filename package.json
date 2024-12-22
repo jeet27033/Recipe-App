@@ -1,28 +1,25 @@
 {
   "name": "recipe-app",
-  "version": "0.1.0",
-  "private": true,
-  "dependencies": {
-    "cra-template": "1.2.0",
-    "lodash": "^4.17.21",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "react-loading-indicators": "^1.0.0",
-    "react-router-dom": "^7.0.2",
-    "react-scripts": "5.0.1",
-    "styled-components": "^6.1.13"
-  },
+  "version": "1.0.0",
+  "description": "1 . npm install styled-components",
+  "main": "index.js",
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "react-scripts start"
   },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@reduxjs/toolkit": "^2.5.0",
+    "immutable": "^5.0.3",
+    "lodash": "^4.17.21",
+    "react-loading-indicators": "^1.0.0",
+    "react-redux": "^9.2.0",
+    "react-router-dom": "^7.1.0",
+    "react-scripts": "^5.0.1",
+    "redux": "^5.0.1",
+    "styled-components": "^6.1.13"
   },
   "browserslist": {
     "production": [

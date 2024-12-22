@@ -1,13 +1,18 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { Div, Container, Title, Button, Message, IngredientsList, MyCounter } from "./Style";
+import { Div, Container, Title, Button, Message, IngredientsList, MyCounter,LoaderContainer } from "./Style";
 import { isEmpty, range } from 'lodash';
+import { useDispatch, useSelector } from 'react-redux';
+import { FetchDetailRequest, FetchDetailSuccess, FetchDetailFailure } from './redux/action';
+import {Api} from "./api/api"
+import { OrbitProgress } from "react-loading-indicators";
 
 export const Details = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const { data } = location.state || {};
-    const [detailedData, setDetailedData] = useState(null);
+    const dispatch = useDispatch();
+    const { DetailedData, DetailLoading, DetailError } = useSelector((state) => state.toJS());
     const [counter, setCounter] = useState(1);
 
     const goBack = () => {
@@ -22,21 +27,27 @@ export const Details = () => {
 
     useEffect(() => {
         if (data) {
-            fetch(`https://www.themealdb.com/api/json/v1/1/search.php?s=${data}`)
+            dispatch(FetchDetailRequest());
+            fetch(Api(data))
                 .then((res) => res.json())
                 .then((detaileddata) => {
                     if (!isEmpty(detaileddata.meals)) {
-                        setDetailedData(detaileddata.meals[0]);
+                        dispatch(FetchDetailSuccess(detaileddata.meals[0]));
                     } else {
-                        setDetailedData(null);
+                        dispatch(FetchDetailSuccess(null));
                     }
                 })
                 .catch((error) => {
-                    console.error("Error fetching data:", error);
-                    setDetailedData(null);
+                    console.error(error);
+                    dispatch(FetchDetailFailure(error.message));
                 });
         }
-    }, [data]);
+    }, [data, dispatch ]);
+
+    const extractNumbersFromString = (str) => {
+        const numbers = str.match(/\d+/g);
+        return numbers ? numbers.map(Number) : [];
+    };
 
     const adjustCounter = (increment) => {
         setCounter((prevCounter) => {
@@ -48,68 +59,74 @@ export const Details = () => {
     return (
         <Div>
             <Container>
-                <Button onClick={goBack}>Go Back</Button>
-                {detailedData ? (
+                {DetailLoading && !DetailedData && (
+                    <OrbitProgress variant="dotted" color="#32cd32" size="medium" />
+                )}
+                {DetailError && (
+                    <Message error>Error: {DetailError}</Message>
+                )}
+    
+                {!DetailLoading && (
                     <>
-                        <Title>{detailedData.strMeal}</Title>
-                        <img
-                            src={detailedData.strMealThumb}
-                            alt="meal"
-                            height={300}
-                            width={300}
-                        />
-                        <h3>Category: {detailedData.strCategory}</h3>
-                        
-                        <div>
-                            <Button onClick={() => adjustCounter(-1)}>-</Button>
-                            <MyCounter>{counter}</MyCounter>
-                            <Button onClick={() => adjustCounter(1)}>+</Button>
-                        </div>
-
-                        <IngredientsList>
-                            <center><h3>Ingredients</h3>
-                            {range(1, 21).map((index) => {
-                                const ingredient = detailedData[`strIngredient${index}`];
-                                const measure = detailedData[`strMeasure${index}`];
-                                if (ingredient) {
-                            
-                                    const adjustedMeasure = measure ? measure.trim() : '';
-                                    const quantity = extractNumbersFromString(adjustedMeasure);
-                                    const newMeasure = quantity.length > 0 ? `${quantity[0] * counter} ${adjustedMeasure.replace(/\d+/g, '').trim()}` : adjustedMeasure;
-
-                                    return (
-                                        <li key={index}>
-                                            {newMeasure} {ingredient}
-                                        </li>
-                                    );
-                                }
-                                return null;
-                            })}
-                            </center>
-                        </IngredientsList>
-                        <h3>Instructions <br/> </h3>{detailedData.strInstructions}
-                        {detailedData.strYoutube && (
-                            <h3>
-                                Tutorial Video 
-                                <iframe
-                                    src={MyUrl(detailedData.strYoutube)}
-                                    width={500}
-                                    height={500}
-                                    title="A youtube video"
-                                    allowFullScreen
-                                ></iframe>
-                            </h3>
+                        <Button onClick={goBack}>Go Back</Button>
+    
+                        {DetailedData ? (
+                            <>
+                                <Title>{DetailedData.strMeal}</Title>
+                                <img
+                                    src={DetailedData.strMealThumb}
+                                    alt="meal"
+                                    height={300}
+                                    width={300}
+                                />
+                                <h3>Category: {DetailedData.strCategory}</h3>
+                                
+                                <div>
+                                    <Button onClick={() => adjustCounter(-1)}>-</Button>
+                                    <MyCounter>{counter}</MyCounter>
+                                    <Button onClick={() => adjustCounter(1)}>+</Button>
+                                </div>
+    
+                                <IngredientsList>
+                                    <center><h3>Ingredients</h3>
+                                    {range(1, 21).map((index) => {
+                                        const ingredient = DetailedData[`strIngredient${index}`];
+                                        const measure = DetailedData[`strMeasure${index}`];
+                                        if (ingredient) {
+                                            const adjustedMeasure = measure ? measure.trim() : '';
+                                            const quantity = extractNumbersFromString(adjustedMeasure);
+                                            const newMeasure = quantity.length > 0 ? `${quantity[0] * counter} ${adjustedMeasure.replace(/\d+/g, '').trim()}` : adjustedMeasure;
+    
+                                            return (
+                                                <li key={index}>
+                                                    {newMeasure} {ingredient}
+                                                </li>
+                                            );
+                                        }
+                                        return null;
+                                    })}
+                                    </center>
+                                </IngredientsList>
+                                <h3>Instructions <br /> </h3>{DetailedData.strInstructions}
+                                {DetailedData.strYoutube && (
+                                    <h3>
+                                        Tutorial Video 
+                                        <iframe
+                                            src={MyUrl(DetailedData.strYoutube)}
+                                            width={500}
+                                            height={500}
+                                            title="A youtube video"
+                                            allowFullScreen
+                                        ></iframe>
+                                    </h3>
+                                )}
+                            </>
+                        ) : (
+                            <Message>No meal details found</Message>
                         )}
                     </>
-                ) : (
-                    <Message>No meal details found</Message>
                 )}
             </Container>
         </Div>
-    );
-};
-
-const extractNumbersFromString = (str) => {
-    const numbers = str.match(/\d+/g);
-    return numbers ? numbers.map(Number) : [];
+    );    
 };

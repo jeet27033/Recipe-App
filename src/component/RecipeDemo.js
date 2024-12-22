@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import { isEmpty } from "lodash";
 import { OrbitProgress } from "react-loading-indicators";
 import { Div, Container, Title, Input, LoaderContainer, Message, List, ListItem } from "./Style";
 import { useNavigate } from "react-router-dom";
+import { FetchDataFailure, FetchDataSuccess, FetchDataRequest } from "./redux/action";
+import { Api } from "./api/api";
 
 export const RecipeDemo = () => {
+    const dispatch = useDispatch();
+    const { RecipeData: data, Loading: loading, Error: error } = useSelector((state) => state.toJS());
+    
     const [recipe, setRecipe] = useState("");
-    const [data, setData] = useState(null);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
     const [typingTimeout, setTypingTimeout] = useState(null);
     const navigate = useNavigate();
 
@@ -18,17 +21,22 @@ export const RecipeDemo = () => {
 
     useEffect(() => {
         if (!recipe) {
-            setData(null);
+            dispatch(FetchDataSuccess([])); 
             return;
         }
-        setLoading(true);
-        setError(null);
-        fetch(`https://www.themealdb.com/api/json/v1/1/search.php?s=${recipe}`)
+
+        dispatch(FetchDataRequest());
+        fetch(Api(recipe))
             .then((res) => res.json())
-            .then((mydata) => setData(mydata.meals || []))
-            .catch((err) => setError(err.message))
-            .finally(() => setLoading(false));
-    }, [recipe]);
+            .then((mydata) => {
+                if (mydata.meals) {
+                    dispatch(FetchDataSuccess(mydata.meals));
+                } else {
+                    dispatch(FetchDataSuccess([]));
+                }
+            })
+            .catch((err) => dispatch(FetchDataFailure(err.message)));
+    }, [recipe, dispatch]);
 
     const handleInputChange = (event) => {
         const value = event.target.value.trim();
