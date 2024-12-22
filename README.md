@@ -15,3 +15,5 @@
 7 . npm install redux@latest
 
 8 . npm install react-redux
+
+9 . npm install redux-saga
